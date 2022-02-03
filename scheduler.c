@@ -221,9 +221,95 @@ void policy_SJF(struct job *head)
 	return;
 }
 
+void policy_RR (struct job *head)
+{
+  struct job *currententry = head;
+  int currenttimecounter = 0;
+  int count = 0;
+  int completed = -1;
+  printf ("Execution trace with RR:\n");
+  fflush (stdout);
+  while (currententry != NULL)
+    {
+      count++;
+      currententry = currententry->next;
+    }
+  currententry = head;
+
+
+while(completed < count){
+
+  for (int i = 0; i < count; i++)
+    {
+      if (currententry->length == 0){
+	  completed++;
+	  currententry = currententry->next;
+	}
+      else if (currententry->length == 1 || currententry-> length == 2)
+	{
+	if(currententry->arrival > currenttimecounter){
+	currenttimecounter = currententry->arrival;
+	}
+	  printf ("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n",
+		  currenttimecounter, i /* currententry->id */ ,
+		  currententry->arrival,
+		  currententry->length);
+		  currenttimecounter += currententry->length;
+		  currententry->length = 0;
+	//	   printf ("new length: %d\n", currententry->length);
+	  currententry = currententry->next;
+	  
+	}
+      else
+	{
+	if(currententry->arrival > currenttimecounter){
+	currenttimecounter = currententry->arrival;
+	}
+	  printf ("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n",
+		  currenttimecounter, currententry->id, currententry->arrival,
+		  2);
+	  currenttimecounter += 2;
+	  currententry->length = currententry->length - 2;
+//	  printf ("new length: %d\n", currententry->length);
+	  currententry = currententry->next;
+	  fflush (stdout);
+	}
+    }
+//  printf ("COMPLETED: %d\n", completed);
+  fflush (stdout);
+  if(completed < count){
+ currententry = head;
+ completed = 0;
+ }
+ else{
+ //printf("%d\n",completed); fflush(stdout);
+ completed = count;
+ }
+
+
+}
+
+
+  printf ("End of execution with RR.\n");
+  fflush (stdout);
+  printf ("%s", "");
+  fflush (stdout);
+  return;
+}
+
+
 void analyze_FIFO(struct job *head) {
   // TODO: Fill this in
 
+  return;
+}
+void analyze_RR (struct job *head)
+{
+//go through struct and find when each length comes zero and set that to a counter
+struct job *currententry = head;
+for(int i = 0; i < 10; i++){
+  printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n", currententry->id,15,15,15);
+  }
   return;
 }
 
@@ -243,7 +329,16 @@ int main(int argc, char **argv) {
   // Note: we use a global variable to point to
   // the start of a linked-list of jobs, i.e., the job list
   read_workload_file(workload); //reads in the workload file (one of the test files that is run) and places its contents into the global lsit of jobs to be accessed later
-
+if (strcmp (policy, "RR") == 0)
+    {
+      policy_RR (head);
+      if (analysis && (strcmp (policy, "RR") == 0))
+	{			//if analysis is 1 (1 = true, 0 = false for analysis), then we should analyze the performance of our job scheduler
+	  printf ("Begin analyzing RR:\n");
+	  analyze_RR(head);
+	  printf ("End analyzing RR.\n");
+	}
+    }
   if (strcmp(policy, "FIFO") == 0) { //strcmp compares string 1 to string 2 to see if they are equal; if string 1 is equal to string 2, then 0 is returned.
     policy_FIFO(head);
     if (analysis) { //if analysis is 1 (1 = true, 0 = false for analysis), then we should analyze the performance of our job scheduler
