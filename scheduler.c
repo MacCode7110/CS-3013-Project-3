@@ -117,7 +117,7 @@ void read_workload_file(char* filename) {
   //struct job **head_ptr = malloc(sizeof(struct job*));
 
   if( (fp = fopen(filename, "r")) == NULL)
-    exit(EXIT_FAILURE);
+    assert(0);
 
   while ((read = getline(&line, &len, fp)) > 1) {
     arrival = strtok(line, ",\n");
@@ -157,6 +157,70 @@ void policy_FIFO(struct job *head) {
   return;
 }
 
+void policy_SJF(struct job *head)
+{
+	struct job *currententry = head;
+	struct job *currentarrivals[100];
+	int currenttimecounter = 0;
+	int placementmarker = 0;
+
+	printf("Execution trace with SJF:\n");
+
+	while(currententry != NULL)
+	{
+		//Fill an array of jobs that have arrived by the current time
+		if((currententry->arrival) <= currenttimecounter)
+		{
+			for(int x = 0; x < sizeof(currentarrivals); x++)
+			{
+				if(currentarrivals[x] == NULL && (!(placementmarker)))
+				{
+					currentarrivals[x] = currententry;
+					placementmarker = 1;
+				}
+			}
+
+			//Insertion sort currentarrivals by job length
+			for(int y = 1; y < sizeof(currentarrivals); y++)
+			{
+				struct job *j = NULL;
+				int z = y - 1;
+
+				if(currentarrivals[y] != NULL)
+				{
+					j = currentarrivals[y];
+				}
+
+				if(j != NULL)
+				{
+					while(z >= 0 && (currentarrivals[z]->length) > (j->length))
+					{
+						currentarrivals[z + 1] = currentarrivals[z];
+						z = z - 1;
+						currentarrivals[z+1] = j;
+					}
+				}
+			}
+
+			printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", currenttimecounter, currentarrivals[0]->id, currentarrivals[0]->arrival, currentarrivals[0]->length);
+
+			currentarrivals[0] = NULL;
+			currenttimecounter++;
+			currententry = currententry->next;
+		}
+		else
+		{
+			currenttimecounter++;
+			currententry = currententry->next;
+		}
+	}
+
+	printf("End of execution with SJF.\n");
+	printf("%s", "");
+
+	return;
+}
+
 void analyze_FIFO(struct job *head) {
   // TODO: Fill this in
 
@@ -168,7 +232,7 @@ int main(int argc, char **argv) {
  if (argc < 4) {
     fprintf(stderr, "missing variables\n");
     fprintf(stderr, "usage: %s analysis-flag policy workload-file slice-duration\n", argv[0]);
-		exit(EXIT_FAILURE);
+		assert(0);
   }
 
   int analysis = atoi(argv[1]); //atoi returns an integer from a string argument
@@ -180,19 +244,28 @@ int main(int argc, char **argv) {
   // the start of a linked-list of jobs, i.e., the job list
   read_workload_file(workload); //reads in the workload file (one of the test files that is run) and places its contents into the global lsit of jobs to be accessed later
 
-  if (strcmp(policy, "FIFO") == 0 ) { //strcmp compares string 1 to string 2 to see if they are equal; if string 1 is equal to string 2, then 0 is returned.
+  if (strcmp(policy, "FIFO") == 0) { //strcmp compares string 1 to string 2 to see if they are equal; if string 1 is equal to string 2, then 0 is returned.
     policy_FIFO(head);
     if (analysis) { //if analysis is 1 (1 = true, 0 = false for analysis), then we should analyze the performance of our job scheduler
       printf("Begin analyzing FIFO:\n");
       analyze_FIFO(head);
       printf("End analyzing FIFO.\n");
     }
-
-    exit(EXIT_SUCCESS);
+  }
+  else if (strcmp(policy, "SJF") == 0)
+  {
+	  policy_SJF(head);
+	  if (analysis) {
+		  printf("Begin analyzing SJF:\n");
+		  //analyze_SJF(head);
+		  printf("End analyzing SJF.\n");
+	  }
   }
 
   // TODO: Add other policies
 
 	exit(EXIT_SUCCESS);
 }
+
+
 
