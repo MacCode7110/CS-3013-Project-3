@@ -398,7 +398,7 @@ int main(int argc, char **argv) {
 
 	int analysis = atoi(argv[1]); //atoi returns an integer from a string argument
 	char *policy = argv[2], *workload = argv[3];
-	//int slice_duration = atoi(argv[4]);
+	int slice_duration = atoi(argv[4]);
 
 	// Note: we use a global variable to point to
 	// the start of a linked-list of jobs, i.e., the job list
