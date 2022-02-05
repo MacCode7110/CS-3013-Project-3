@@ -237,6 +237,7 @@ policy_SJF (struct job *head)
 void
 policy_RR (struct job *head, int analysis, int slice)
 {
+//initializing many of the different variables 
   struct job *currententry = head;
   int currenttimecounter = 0;
   int full = 0;
@@ -245,11 +246,13 @@ policy_RR (struct job *head, int analysis, int slice)
   printf ("Execution trace with RR:\n");
   fflush (stdout);
   int wait[count];
+  //counts how many jobs need to be schedules
   while (currententry != NULL)
     {
       count++;
       currententry = currententry->next;
     }
+    //make arrays for turnaround and response
   int turnaround[count];
   int response[count];
   for (int i = 0; i < count; i++)
@@ -259,23 +262,25 @@ policy_RR (struct job *head, int analysis, int slice)
       wait[i] = 0;
     }
   currententry = head;
+  //keep the loop going until all jobs are completed
   while (completed < count)
     {
+    //interates through the loop going to each job
       for (int i = 0; i < count; i++)
 	{
+	//tests to see if we should move on to the next job before completing the current one
       if(currententry->arrival - response[i-1] > slice && currententry != NULL){
         if(currententry->arrival-currenttimecounter < slice+1){
       if(currenttimecounter < currententry->arrival){
      currenttimecounter = currententry->arrival;
      }
-     
-     
-      turnaround[i] = currenttimecounter + slice;
+     //prints out the end   
       printf ("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n",
 		      currenttimecounter, i,
 		      currententry->arrival, slice);
 		       currenttimecounter += slice;
       }
+      //resets the current entry
 if(currententry->id == count-1){
 currententry = head;
 }
@@ -283,11 +288,13 @@ else{
 currententry = currententry->next;
 }
 }
+//if no length skip over it
 	  if (currententry->length == 0)
 	    {
 	      completed++;
 	      currententry = currententry->next;
 	    }
+	    //if lower that the slice, then set length to 0 and 
 	  else if (currententry->length < slice)
 	    {
 	      if (full < count)
@@ -296,30 +303,31 @@ currententry = currententry->next;
 		  wait[i] = currententry->length;
 		  full++;
 		}
-  turnaround[i] = currenttimecounter + slice-1;
+             turnaround[i] = currenttimecounter + slice-1;
+             if(currententry->arrival == currenttimecounter){
+		response[i] = 0;
+		}
 	      printf ("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n",
 		      currenttimecounter, i ,
 		      currententry->arrival, currententry->length);
 	      currenttimecounter += currententry->length;
-	 //     turnaround[currententry->id] = currenttimecounter;
-	      currententry->length = 0;
+		      currententry->length = 0;
 	      currententry = currententry->next;
 
 	    }
+	    //if any other length (when subtracting length)
 	  else
 	    {
 	      if (currententry->arrival > currenttimecounter)
 		{
 		  currenttimecounter = currententry->arrival;
 		}
-
-	      if (full < count)
-		{
+//counts to see if completed
+	      if (full < count){
 		  response[i] = currenttimecounter;
 		  wait[i] = currententry->length;
 		  full++;
 		}
-  
 	      printf ("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n",
 		      currenttimecounter, currententry->id,
 		      currententry->arrival, slice);
@@ -338,7 +346,6 @@ currententry = currententry->next;
 	}
       else
 	{
-	  //printf("%d\n",completed); fflush(stdout);
 	  completed = count;
 	}
 	
@@ -346,7 +353,7 @@ currententry = currententry->next;
   printf ("End of execution with RR.\n");
   fflush (stdout);
   printf ("%s", "");
-
+//starts analysis 
 
   fflush (stdout);
   currententry = head;
@@ -361,6 +368,7 @@ currententry = currententry->next;
 	{
 	  printf ("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n",
 		  i, response[i], turnaround[i], turnaround[i] - wait[i]);
+		  //finds averages
 	  avg1 += response[i];
 	  avg2 += turnaround[i];
 	  avg3 += (turnaround[i] - wait[i]);
